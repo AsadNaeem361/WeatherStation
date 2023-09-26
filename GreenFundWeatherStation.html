@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Weather Metrics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            margin: 1% 10% 3% 10%;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1 style="text-align: center;">Green Fund Weather Station </h1>
+    </div>
+    <div class="chart-container">
+        <canvas id="humidityChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="luminanceChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="rainChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="rainPerSecondChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="pressureChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="windDirectionChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="windSpeedChart"></canvas>
+    </div>
+
+    <script>
+
+        const username = "GreenFundWeatherStation";
+        const api_key = "aio_YwtO59RRvmsyTJ9U8eOfUkezRZve";
+
+        const headers = {
+            "X-AIO-Key": api_key,
+            "Accept": "application/json",
+        };
+
+        const urls = [
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-humidity/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-luminance/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-pressure/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-rain/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-rain-per-second/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-temperature/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-wind-direction/data",
+            "https://io.adafruit.com/api/v2/GreenFundWeatherStation/feeds/enviro.uow-weatherstation-wind-speed/data",
+        ];
+
+        const weatherData = {};
+
+        for (const url of urls) {
+            const key = url.split("weatherstation-")[1];
+            weatherData[key] = url;
+        }
+
+        // Fetch data for each URL using async/await
+        const fetchData = async () => {
+            const metricData = {}; // Object to store metric data arrays dynamically
+
+            for (const [key, url] of Object.entries(weatherData)) {
+                try {
+                    const response = await fetch(url, { headers });
+                    const data = await response.json();
+
+                    const sanitizedKey = key.replace(/[-/]/g, "_");
+                    const valuesVariableName = `${sanitizedKey}Values`;
+                    const timestampsVariableName = `${sanitizedKey}Timestamps`;
+
+                    // Create the arrays dynamically and assign to metricData object
+                    metricData[valuesVariableName] = [];
+                    metricData[timestampsVariableName] = [];
+
+                    for (const entry of data) {
+                        const value = entry.value;
+                        const timestamp = entry.created_epoch;
+
+                        // Push values to the dynamically created arrays
+                        metricData[valuesVariableName].push(value);
+                        metricData[timestampsVariableName].push(timestamp);
+                    }
+                } catch (error) {
+                    console.error("Error fetching weather data:", error);
+                }
+            }
+
+            // Access the metric data arrays
+            const humidityValues = metricData.humidity_dataValues;
+            const humidityTimestamps = metricData.humidity_dataTimestamps;
+
+
+            const luminanceValues = metricData.luminance_dataValues;
+            const luminanceTimestamps = metricData.luminance_dataTimestamps;
+
+
+
+            const rainValues = metricData.rain_dataValues;
+            const rainTimestamps = metricData.rain_dataTimestamps;
+
+
+
+            const rainPerSecondValues = metricData.rain_per_second_dataValues;
+            const rainPerSecondTimestamps = metricData.rain_per_second_dataTimestamps;
+
+
+
+            const pressureValues = metricData.pressure_dataValues;
+            const pressureTimestamps = metricData.pressure_dataTimestamps;
+
+
+
+            const temperatureValues = metricData.temperature_dataValues;
+            const temperatureTimestamps = metricData.temperature_dataTimestamps;
+
+
+
+            const windDirectionValues = metricData.wind_direction_dataValues;
+            const windDirectionTimestamps = metricData.wind_direction_dataTimestamps;
+
+
+
+            const windSpeedValues = metricData.wind_speed_dataValues;
+            const windSpeedTimestamps = metricData.wind_speed_dataTimestamps;
+
+
+            const humidityTimestampsFormatted = humidityTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const luminanceTimestampsFormatted = luminanceTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const rainTimestampsFormatted = rainTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const rainPerSecondTimestampsFormatted = rainPerSecondTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const pressureTimestampsFormatted = pressureTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const temperatureTimestampsFormatted = temperatureTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const windDirectionTimestampsFormatted = windDirectionTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const windSpeedTimestampsFormatted = windSpeedTimestamps.map((timestamp) => {
+                const milliseconds = timestamp * 1000;
+                const date = new Date(milliseconds);
+                return date.toLocaleString(); // Customize the formatting options as needed
+            });
+
+            const dataArray = [
+                { key: "humidityValues", value: metricData.humidity_dataValues },
+                { key: "humidityTimestamps", value: humidityTimestampsFormatted },
+                { key: "luminanceValues", value: metricData.luminance_dataValues },
+                { key: "luminanceTimestamps", value: luminanceTimestampsFormatted },
+                { key: "rainValues", value: metricData.rain_dataValues },
+                { key: "rainTimestamps", value: rainTimestampsFormatted },
+                { key: "rainPerSecondValues", value: metricData.rain_per_second_dataValues },
+                { key: "rainPerSecondTimestamps", value: rainPerSecondTimestampsFormatted },
+                { key: "pressureValues", value: metricData.pressure_dataValues },
+                { key: "pressureTimestamps", value: pressureTimestampsFormatted },
+                { key: "temperatureValues", value: metricData.temperature_dataValues },
+                { key: "temperatureTimestamps", value: temperatureTimestampsFormatted },
+                { key: "windDirectionValues", value: metricData.wind_direction_dataValues },
+                { key: "windDirectionTimestamps", value: windDirectionTimestampsFormatted },
+                { key: "windSpeedValues", value: metricData.wind_speed_dataValues },
+                { key: "windSpeedTimestamps", value: windSpeedTimestampsFormatted },
+            ];
+
+
+            return dataArray;
+
+            // Access other metric data arrays as needed
+        };
+
+        async function getDataArray() {
+            const promise = fetchData(); // Assuming `fetchData()` returns a Promise
+            const result = await promise;
+            const dataArray = result;
+            console.log(dataArray[0].value);
+
+
+            const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+            new Chart(humidityCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[1].value,
+                    datasets: [{
+                        label: 'Humidity (%)',
+                        data: dataArray[0].value,
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const luminanceCtx = document.getElementById('luminanceChart').getContext('2d');
+            new Chart(luminanceCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[3].value,
+                    datasets: [{
+                        label: 'Luminance meter (cd/m²)',
+                        data: dataArray[2].value,
+                        fill: false,
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const rainCtx = document.getElementById('rainChart').getContext('2d');
+            new Chart(rainCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[5].value,
+                    datasets: [{
+                        label: 'Rain',
+                        data: dataArray[4].value,
+                        fill: false,
+                        borderColor: 'rgb(54, 162, 235)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const rainPerSecondCtx = document.getElementById('rainPerSecondChart').getContext('2d');
+            new Chart(rainPerSecondCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[7].value,
+                    datasets: [{
+                        label: 'Rain per Second',
+                        data: dataArray[6].value,
+                        fill: false,
+                        borderColor: 'rgb(255, 205, 86)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const pressureCtx = document.getElementById('pressureChart').getContext('2d');
+            new Chart(pressureCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[9].value,
+                    datasets: [{
+                        label: 'Pressure (Pa)',
+                        data: dataArray[8].value,
+                        fill: false,
+                        borderColor: 'rgb(153, 102, 255)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+            new Chart(temperatureCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[11].value,
+                    datasets: [{
+                        label: 'Temperature (C)',
+                        data: dataArray[10].value,
+                        fill: false,
+                        borderColor: 'rgb(255, 159, 64)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const windDirectionCtx = document.getElementById('windDirectionChart').getContext('2d');
+            new Chart(windDirectionCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[13].value,
+                    datasets: [{
+                        label: 'Wind Direction',
+                        data: dataArray[12].value,
+                        fill: false,
+                        borderColor: 'rgb(70, 180, 150)',
+                        tension: 0.1
+                    }]
+                }
+            });
+
+            const windSpeedCtx = document.getElementById('windSpeedChart').getContext('2d');
+            new Chart(windSpeedCtx, {
+                type: 'line',
+                data: {
+                    labels: dataArray[15].value,
+                    datasets: [{
+                        label: 'Wind Speed',
+                        data: dataArray[14].value,
+                        fill: false,
+                        borderColor: 'rgb(220, 53, 69)',
+                        tension: 0.1
+                    }]
+                }
+            });
+        }
+
+        getDataArray();
+
+    </script>
+</body>
+
+</html>
